@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+trap 'echo "❌ Push aborted due to failed clasp step."' ERR
+echo "🔄 Pushing to Apps Script..."
+clasp push
+echo "🧪 Running tests..."
+clasp run runAllTests
+echo "✅ All tests passed. Proceeding with git push..."
