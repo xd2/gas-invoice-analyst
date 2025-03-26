@@ -12,4 +12,8 @@ clasp create-deployment -d "web-api" -i ${DEPLOYMENT_ID}
 echo "🧪 Running tests..."
 response=$(curl -H "Authorization: Bearer ${ACCESS_TOKEN}" -Ls "${DEPLOYMENT_URL}")
 echo "$response"
-echo "$response" | grep -q "❌" && exit 1
+if echo "$response" | grep -q "❌"; then
+  exit 1
+else
+  exit 0
+fi
