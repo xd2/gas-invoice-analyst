@@ -17,7 +17,7 @@ class Ai {
 
     const completionString = Ai.openaiResponses(instructions, invoiceAsText, "gpt-4o", 1)
     const meta = Text.jsonParse(completionString)
-    if (meta.gross !== (meta.net + meta.vat).toFixed(2)) {
+    if (meta.gross !== Number((meta.net + meta.vat).toFixed(2))) {
       throw new Error("gross != net + vat: " + JSON.stringify(meta))
     }
     return meta

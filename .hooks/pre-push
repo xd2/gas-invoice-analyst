@@ -1,8 +1,13 @@
 #!/bin/bash
 set -e
+DEPLOYMENT_ID="AKfycbyRkaDUTeGeJrd8vOYVfb5vvzn6MoPy6zFtDzLsk_2cwX_cQFPBPRq1gdBuTosR6H7m2Q"
+DEPLOYMENT_URL="https://script.google.com/macros/s/${DEPLOYMENT_ID}/exec"
+ACCESS_TOKEN=$(jq -r '.tokens.default.access_token' ~/.clasprc.json)
+
 trap 'echo "❌ Push aborted due to failed clasp step."' ERR
 echo "🔄 Pushing to Apps Script..."
 clasp push
+echo "🚀 Deploying web-api..."
+clasp create-deployment -d "web-api" -i ${DEPLOYMENT_ID}
 echo "🧪 Running tests..."
-clasp run runAllTests
-echo "✅ All tests passed. Proceeding with git push..."
+curl -H "Authorization: Bearer ${ACCESS_TOKEN}" -Ls "${DEPLOYMENT_URL}" | tee /dev/tty | grep -q "❌" && exit 1

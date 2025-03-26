@@ -23,27 +23,31 @@ class Assert {
 }
 
 function runAllTests() {
-  const context = globalThis || this
+  const context = this;
   const testResults = [];
-  let failed = 0;
 
   for (const key in context) {
     const maybeFn = context[key];
-    if (typeof maybeFn === "function" && /Test$/i.test(key)) {
+    if (typeof maybeFn === 'function' && /Test$/i.test(key)) {
       try {
-        maybeFn(); // exécute la fonction de test
-        testResults.push(`✅ ${key} passed`);
+        maybeFn();
+        const msg = `✅ ${key} passed`;
+        testResults.push(msg);
+        console.log(msg);
       } catch (e) {
-        testResults.push(`❌ ${key} failed: ${e.message}`);
-        failed++;
+        const msg = `❌ ${key} failed: ${e.message}`;
+        testResults.push(msg);
+        console.error(msg);
       }
     }
   }
 
-  Logger.log(testResults.join('\n'));
+  return testResults;
+}
 
-  if (failed > 0) {
-    throw new Error(`${failed} test(s) failed`);
-  }
+function doGet() {
+  const formatted = runAllTests().map(line => `${line}`).join('\n');
+  return ContentService.createTextOutput(formatted)
+    .setMimeType(ContentService.MimeType.TEXT);
 }
 
