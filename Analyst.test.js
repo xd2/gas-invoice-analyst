@@ -1,13 +1,13 @@
 function analyze_shouldReturnInvoiceDetails_Test() {
- // Assert.objectEquals({
- //   "company": "StudioShodwe",
- //   "date": new Date("2022-06-25T12:00:00.000Z"),
- //   "number": "12345",
- //   "gross": 8245,
- //   "net": 7495.46,
- //   "vat": 749.54,
- //   "currency": "$"
- // }, analyzeInvoice('1MOhDbNDCL57kTgOA0vDZXv5h2ZxIlR5t'))
+  Assert.objectEquals({
+    "company": "StudioShodwe",
+    "date": new Date("2022-06-25T12:00:00.000Z"),
+    "number": "12345",
+    "gross": 8245,
+    "net": 7495.45,
+    "vat": 749.55,
+    "currency": "$"
+  }, analyzeInvoice('1MOhDbNDCL57kTgOA0vDZXv5h2ZxIlR5t'))
 
   Assert.objectEquals({
     "company": "DemoSlicedInvoices",
@@ -25,7 +25,7 @@ function analyze_shouldReturnInvoiceDetails_Test() {
     "date": new Date("2023-12-15T12:00:00.000Z"),
     "gross": 170,
     "net": 170,
-    "number": "INV-12345678",
+    "number": "",
     "vat": 0
   }, analyzeInvoice('1MPL6iAeocoMV0KDcqgXP6VhO54vjODU_'))
 

@@ -13,12 +13,13 @@ class Ai {
       vat: the VAT amount
 
       All amounts must be positive numbers.
+      Truncate all values to 2 decimal places (not rounded).      
       To validate the amounts, apply the following checks:
-      vat + net = gross, truncated to 2 decimal places (not rounded).
+      vat + net = gross
       Example: for a 10% tax rate → 10.00 + 100.00 = 110.00
       (vat / net) - (gross / net - 1) < 0.01
       Example: ( 20 / 100) - ( 120 / 100 -1 ) < 0.01  
-      Truncate all values to 2 decimal places. 
+
       If totals are inconsistent, look for other values so the equations hold.
       
       Special case: If a discount (reduction, rebate, rabais, off) is applied "before" the grand total  :
@@ -32,7 +33,7 @@ class Ai {
       {"company": "OpenAi", "date": "2024-02-26T12:00:00.000Z", "number": "INV-12345678", "vat": 1833.33, "gross": 11000.0, "net": 9166.67, "currency": "€"}
       Your response must be only the JSON object, with no additional text, no formatting, no explanation, and no backticks. The output must be directly parsable by JSON.parse().`
 
-    const completionString = Ai.openaiResponses(instructions, invoiceAsText, "gpt-4o-mini", 0.1)
+    const completionString = Ai.openaiResponses(instructions, invoiceAsText, "gpt-4o", 0.1)
     const data = Text.jsonParse(completionString)
     if (data.gross !== Number((data.net + data.vat).toFixed(2))) {
       throw new Error("gross != net + vat \n" + JSON.stringify(data))
