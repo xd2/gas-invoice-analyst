@@ -7,7 +7,7 @@ class Ai {
       currency: the currency symbol
       number: the invoice number or reference, as a string.
       date: the invoice date in ISO format (YYYY-MM-DDT12:00:00.000Z), always with the time set to 12:00 UTC.
-      company: the name of the company that issued the invoice. Simplify the name by removing any non numeric or alphabetical character, removing legal suffixes (e.g. SAS, Limited, Ltd, GmbH, Inc) and format the company name using PascalCase (capitalize each word, no spaces).
+      company: the name of the company that issued the invoice. Simplify the name by removing any non numeric or alphabetical character, removing legal suffixes (e.g. SAS, Limited, Ltd, GmbH, Inc), removing country name(Google cloud France => GoogleCloud) and format the company name using PascalCase (capitalize each word, no spaces).
       gross: the Gross total amount (including VAT)
       net: the Net total amount (excluding VAT)
       vat: the VAT amount
@@ -21,19 +21,18 @@ class Ai {
       Truncate all values to 2 decimal places. 
       If totals are inconsistent, look for other values so the equations hold.
       
-      Special case: If a discount is applied to the total gross :
-      use the discounted gross as the gross value
-      compute by yourself the tax rate based on net values using: rate = vat / net
-      compute by yourself vat = gross - gross / (1 + rate)
-      compute by yourself net = gross - net
+      Special case: If a discount (reduction, rebate, rabais, off) is applied "before" the grand total  :
+      use the document total {gross} as the gross value
+      compute by yourself the tax {rate} based on net values (thoses before discount, prefixed before.) using: {rate} = {before.vat} / {before.net}
+      compute by yourself {vat} = {gross} - {gross} / (1 + {rate})
+      compute by yourself {net} = {gross} - {vat}
+      Example with document containing 'sous-total': 10000€, 'TVA(20%)': 2000€, 'remise': 1000€, 'total': 11000€. {rate} = 2000 / 10000 = 0.2; {vat} = 11000 - 11000 / (1 + {rate}) = 11000 - 11000 / 1.2 = 1833.33; {net} = 11000 - {vat} = 11000 - 1833.33 = 9166.67
 
-      The expected output is a valid JSON object with the following structure:
-      {"company": "OpenAi", "date": "2024-02-26T12:00:00.000Z", "number": "INV-12345678", "vat": 10.0, "gross": 60.0, "net": 50.0, "currency": "€"}
-      Your response must be only the JSON object, with no additional text, no formatting, no explanation, and no backticks. The output must be directly parsable by JSON.parse().
-`
+      In every case, the expected output is a valid JSON object with the following structure:
+      {"company": "OpenAi", "date": "2024-02-26T12:00:00.000Z", "number": "INV-12345678", "vat": 1833.33, "gross": 11000.0, "net": 9166.67, "currency": "€"}
+      Your response must be only the JSON object, with no additional text, no formatting, no explanation, and no backticks. The output must be directly parsable by JSON.parse().`
 
-
-    const completionString = Ai.openaiResponses(instructions, invoiceAsText, "gpt-4o", 0.1)
+    const completionString = Ai.openaiResponses(instructions, invoiceAsText, "gpt-4o-mini", 0.1)
     const data = Text.jsonParse(completionString)
     if (data.gross !== Number((data.net + data.vat).toFixed(2))) {
       throw new Error("gross != net + vat \n" + JSON.stringify(data))
