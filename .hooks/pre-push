@@ -10,4 +10,4 @@ clasp push
 echo "🚀 Deploying web-api..."
 clasp create-deployment -d "web-api" -i ${DEPLOYMENT_ID}
 echo "🧪 Running tests..."
-curl -H "Authorization: Bearer ${ACCESS_TOKEN}" -Ls "${DEPLOYMENT_URL}" | tee /dev/tty | grep -q "❌" && exit 1
+curl -H "Authorization: Bearer ${ACCESS_TOKEN}" -Ls "${DEPLOYMENT_URL}" | tee /dev/stdout | grep -q "❌" && exit 1
