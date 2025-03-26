@@ -1,26 +1,49 @@
 class Ai {
 
   static inferInvoice(invoiceAsText) {
-    const instructions = `Tu es un expert en factures qui extrait les montants financiers (montant de TVA, Total HT, Total TTC) et autre libellés comptables à partir d'un texte brut.
-        Identifie le total HT (net), le Total TTC (gross), le montant de TVA (vat), le symbole de la devise (currency).
-        Les montants attendus sont toujours positifs.
-        Special case : If a discount is applied on total gross, use discounted total as gross, use vat rate to compute net and vat based on this total gross after discount. 
-        To check reported amounts, please check :
-        1) vat + net = gross, truncated at 2 decimals. i.e. for a 10% tax rate : 10.00 + 100.00 = 110.00
-        2) net * (1 + tax rate) = gross. i.e. for a 10% tax rate : 100 * (1 + 0.1) = 110
-        Identifie le nom de l'entreprise émmetrice (company) de la facture; simplifie le en retirant les suffixes (SAS, Limited, Ltd, etc.); use PascalCase as company naming convention.
-        Identifie la date de la facture (date) au format ISO, en mettant une heure par défaut à 12:00 UTC.
-        Identifie le numero de facture (number)
-        Le format attendu JSON est tel que : {"company": "OpenAi", "date": "2024-02-26T12:00:00.000Z", "number":"INV-12345678", "vat": 10.0, "gross": 60, "net": 50, "currency": "€"}
-        Ta réponse doit être uniquement un objet JSON valide, sans aucun texte supplémentaire, ni introduction, ni explication, ni balises de formatage, ni backticks (\`\`\`). La réponse doit être directement exploitable par JSON.parse().`
+    const instructions = `
+      You are an invoice expert extracting financial amounts (VAT amount, Net total, Gross total) and other accounting labels from raw text.
+      Identify the following fields:
+      currency: the currency symbol
+      number: the invoice number or reference, as a string.
+      date: the invoice date in ISO format (YYYY-MM-DDT12:00:00.000Z), always with the time set to 12:00 UTC.
+      company: the name of the company that issued the invoice. Simplify the name by removing any non numeric or alphabetical character, removing legal suffixes (e.g. SAS, Limited, Ltd, GmbH, Inc) and format the company name using PascalCase (capitalize each word, no spaces).
+      gross: the Gross total amount (including VAT)
+      net: the Net total amount (excluding VAT)
+      vat: the VAT amount
+
+      All amounts must be positive numbers.
+      To validate the amounts, apply the following checks:
+      vat + net = gross, truncated to 2 decimal places (not rounded).
+      Example: for a 10% tax rate → 10.00 + 100.00 = 110.00
+      (vat / net) - (gross / net - 1) < 0.01
+      Example: ( 20 / 100) - ( 120 / 100 -1 ) < 0.01  
+      Truncate all values to 2 decimal places. 
+      If totals are inconsistent, look for other values so the equations hold.
+      
+      Special case: If a discount is applied to the total gross :
+      use the discounted gross as the gross value
+      compute by yourself the tax rate based on net values using: rate = vat / net
+      compute by yourself vat = gross - gross / (1 + rate)
+      compute by yourself net = gross - net
+
+      The expected output is a valid JSON object with the following structure:
+      {"company": "OpenAi", "date": "2024-02-26T12:00:00.000Z", "number": "INV-12345678", "vat": 10.0, "gross": 60.0, "net": 50.0, "currency": "€"}
+      Your response must be only the JSON object, with no additional text, no formatting, no explanation, and no backticks. The output must be directly parsable by JSON.parse().
+`
 
 
-    const completionString = Ai.openaiResponses(instructions, invoiceAsText, "gpt-4o", 1)
-    const meta = Text.jsonParse(completionString)
-    if (meta.gross !== Number((meta.net + meta.vat).toFixed(2))) {
-      throw new Error("gross != net + vat: " + JSON.stringify(meta))
+    const completionString = Ai.openaiResponses(instructions, invoiceAsText, "gpt-4o", 0.1)
+    const data = Text.jsonParse(completionString)
+    if (data.gross !== Number((data.net + data.vat).toFixed(2))) {
+      throw new Error("gross != net + vat \n" + JSON.stringify(data))
     }
-    return meta
+    if (Math.abs((data.vat / data.net) - (data.gross / data.net - 1)) > 0.01) {
+      console.error(`vat/net=${data.vat / data.net}`)
+      console.error(`gross/net-1=${data.gross / data.net - 1}`)
+      throw new Error("vat / net  !=  gross / net - 1 \n" + JSON.stringify(data))
+    }
+    return data
   }
 
   /**

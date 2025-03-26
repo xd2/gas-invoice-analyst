@@ -1,16 +1,24 @@
-function analyse_shouldReturnInvoiceDetails_forAllInvoices_test() {
+function analyze_shouldReturnInvoiceDetails_Test() {
+  Assert.objectEquals({
+    "company": "DemoSlicedInvoices",
+    "currency": "$",
+    "date": new Date("2016-01-25T12:00:00Z"),
+    "gross": 93.5,
+    "net": 85,
+    "number": "INV-3337",
+    "vat": 8.5
+  }, analyzeInvoice('1MBwnGStwNPLzxyUGI_JFSYcn2dUFz_Ei'))
+
   Assert.objectEquals({
     "company": "StudioShodwe",
     "date": new Date("2022-06-25T12:00:00.000Z"),
     "number": "12345",
-    "vat": 795,
     "gross": 8245,
-    "net": 7950,
+    "net": 7495.45,
+    "vat": 749.55,
     "currency": "$"
   }, analyzeInvoice('1MOhDbNDCL57kTgOA0vDZXv5h2ZxIlR5t'))
-}
 
-function analyze_shouldReturnInvoiceDetails() {
   Assert.objectEquals({
     "company": "TimmermanIndustries",
     "currency": "$",
@@ -29,19 +37,7 @@ function analyze_shouldReturnInvoiceDetails() {
     "net": 381.12,
     "number": "123100401",
     "vat": 72.41
-  }
-    , analyzeInvoice('1MA5lS3L_L8H1beSZlUpxANwPe9FOL0_w'))
-
-  Assert.objectEquals({
-    "company": "DemoSlicedInvoices",
-    "currency": "$",
-    "date": new Date("2016-01-25T12:00:00Z"),
-    "gross": 93.5,
-    "net": 85,
-    "number": "INV-3337",
-    "vat": 8.5
-  }
-    , analyzeInvoice('1MBwnGStwNPLzxyUGI_JFSYcn2dUFz_Ei'))
+  }, analyzeInvoice('1MA5lS3L_L8H1beSZlUpxANwPe9FOL0_w'))
 
   Assert.objectEquals({
     "company": "Wardiere",
@@ -52,24 +48,4 @@ function analyze_shouldReturnInvoiceDetails() {
     "vat": 0,
     "number": "2000-15",
   }, analyzeInvoice('1MWsgzSMJC8JbzsCnMABm0u27feILDfBJ'))
-}
-
-function analyseInvoice_shouldReturnInvoiceDetails_whenGivenPdfInvoice_test() {
-  //Given 
-  const givenFileId = '1MBwnGStwNPLzxyUGI_JFSYcn2dUFz_Ei'
-
-  // When
-  const actualInvoiceDetails = analyzeInvoice(givenFileId)
-
-  // Then
-  Assert.objectEquals({
-    "company": "Sliced Invoices",
-    "currency": "$",
-    "date": new Date("2016-01-25T12:00:00Z"),
-    "gross": 93.5,
-    "net": 85,
-    "number": "INV-3337",
-    "vat": 8.5
-  }
-    , actualInvoiceDetails)
 }
