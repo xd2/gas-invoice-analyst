@@ -1,0 +1,7 @@
+.idea/
+node_modules/
+*.iml
+.clasp.json  # to avoid sharing project id
+
+.hooks
+Test.js
