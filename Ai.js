@@ -1,6 +1,6 @@
 class Ai {
 
-    static inferInvoice(blobImage) {
+    static inferInvoice(blob) {
         const instructions = `
       You are an invoice expert extracting financial amounts (VAT amount, Net total, Gross total) and other accounting labels from raw text.
       Identify the following fields:
@@ -33,8 +33,8 @@ class Ai {
       {"company": "OpenAi", "date": "2024-02-26T12:00:00.000Z", "number": "INV-12345678", "vat": 1833.33, "gross": 11000.0, "net": 9166.67, "currency": "€"}
       Your response must be only the JSON object, with no additional text, no formatting, no explanation, and no backticks. The output must be directly parsable by JSON.parse().`
 
-        const completionString = Ai.openaiResponses(instructions, blobImage, "gpt-4o", {temperature: 0.1})
-        // const completionString = Ai.gemini(instructions, invoiceAsText, 'gemini-2.5-pro-exp-03-25', { response_mime_type: 'application/json' })
+        // const completionString = Ai.openaiResponses(instructions, blobImage, "gpt-4o", {temperature: 0.1})
+        const completionString = Ai.gemini(instructions, blob, 'gemini-2.5-pro-exp-03-25', {response_mime_type: 'application/json'})
         const data = Text.jsonParse(completionString)
         if (data.gross !== Number((data.net + data.vat).toFixed(2))) {
             throw new Error("gross != net + vat \n" + JSON.stringify(data))
@@ -82,15 +82,22 @@ class Ai {
     }
 
     // gemini-2.0-flash gemini-2.0-flash-lite gemini-2.5-pro-exp-03-25
-    static gemini(instructions, input, model = 'gemini-2.0-flash' || 'gemini-2.0-flash-lite', config = {temperature: 1}) {
+    static gemini(instructions, blob, model = 'gemini-2.0-flash' || 'gemini-2.0-flash-lite', config = {temperature: 1}) {
         const apiKey = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`
 
         const payload = {
             contents: [{
                 parts: [{
-                    text: instructions + "\n" + input
-                }]
+                    text: instructions
+                }, {
+                    "inlineData": {
+                        "mimeType": blob.getContentType(),
+                        "data": Utilities.base64Encode(blob.getBytes())
+
+                    }
+                }
+                ]
             }], generationConfig: config
         };
 

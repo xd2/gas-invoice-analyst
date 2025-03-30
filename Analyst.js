@@ -1,9 +1,6 @@
 function analyzeInvoice(fileId = '1MBwnGStwNPLzxyUGI_JFSYcn2dUFz_Ei') {
     const file = DriveApp.getFileById(fileId)
-    const blob = file.getMimeType() === 'application/pdf' ?
-        UrlFetchApp.fetch(`https://drive.google.com/thumbnail?id=${file.getId()}&sz=w1000`).getBlob() :
-        file.getBlob()
-    const invoice = Ai.inferInvoice(blob)
+    const invoice = Ai.inferInvoice(file.getBlob())
     Logger.log(invoice)
     return invoice
 }
@@ -21,10 +18,7 @@ function normalizeInvoiceFolder(folderId = '1M6ujPNDHAQd8FkxD5Zb5d36aSNlEFPfZ') 
         const file = files.next()
         Logger.log(`Processing ${file.getName()}`)
 
-        const blob = file.getMimeType() === 'application/pdf' ?
-            UrlFetchApp.fetch(`https://drive.google.com/thumbnail?id=${file.getId()}&sz=w1000`).getBlob() :
-            file.getBlob()
-        const invoice = Ai.inferInvoice(blob)
+        const invoice = Ai.inferInvoice(file.getBlob())
 
         const date = Utilities.formatDate(invoice.date, 'GMT', 'yyyyMMdd');
         const extension = file.getName().match(/\.([a-zA-Z]+)$/)[1]
